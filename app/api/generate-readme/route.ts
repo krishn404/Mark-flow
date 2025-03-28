@@ -5,10 +5,24 @@ import { generateReadmeWithGemini } from "@/lib/gemini-client"
 
 export async function POST(request: NextRequest) {
   try {
-    const { repoUrl, apiKey } = await request.json()
+    // Validate request body
+    let body
+    try {
+      body = await request.json()
+    } catch (e) {
+      return NextResponse.json({ 
+        success: false,
+        error: "Invalid request body" 
+      }, { status: 400 })
+    }
+
+    const { repoUrl, apiKey } = body
 
     if (!repoUrl) {
-      return NextResponse.json({ error: "Repository URL is required" }, { status: 400 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Repository URL is required" 
+      }, { status: 400 })
     }
 
     // Initialize Octokit with API key if provided
@@ -19,7 +33,10 @@ export async function POST(request: NextRequest) {
     const match = repoUrl.match(urlPattern)
 
     if (!match) {
-      return NextResponse.json({ error: "Invalid GitHub repository URL" }, { status: 400 })
+      return NextResponse.json({ 
+        success: false,
+        error: "Invalid GitHub repository URL" 
+      }, { status: 400 })
     }
 
     const [, owner, repo] = match
@@ -38,24 +55,29 @@ export async function POST(request: NextRequest) {
     } catch (error: any) {
       console.error("Repository analysis error:", error)
       
-      // Handle specific errors
       if (error.status === 404) {
-        return NextResponse.json({ error: "Repository not found. Please check the URL." }, { status: 404 })
+        return NextResponse.json({ 
+          success: false,
+          error: "Repository not found. Please check the URL." 
+        }, { status: 404 })
       }
       
       if (error.status === 403) {
         return NextResponse.json({ 
-          error: "GitHub API access error. Try adding your GitHub token for better access.",
+          success: false,
+          error: "GitHub API access error. Try adding your GitHub token for better access."
         }, { status: 403 })
       }
 
       return NextResponse.json({ 
+        success: false,
         error: "Failed to analyze repository. Please try again." 
       }, { status: 500 })
     }
   } catch (error) {
     console.error("Unexpected error:", error)
     return NextResponse.json({ 
+      success: false,
       error: "An unexpected error occurred. Please try again." 
     }, { status: 500 })
   }
