@@ -3,6 +3,9 @@ import { Octokit } from "@octokit/rest"
 import { analyzeRepository } from "@/lib/repo-analyzer"
 import { generateReadmeWithGemini } from "@/lib/gemini-client"
 
+export const maxDuration = 300 // Set maximum duration to 5 minutes
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const { repoUrl, apiKey } = await request.json()
@@ -14,7 +17,7 @@ export async function POST(request: NextRequest) {
     // Check if Gemini API key is configured
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: "Gemini API key is not configured. Please set the GEMINI_API_KEY environment variable." },
+        { error: "Gemini API key is not configured" },
         { status: 500 }
       )
     }
@@ -33,19 +36,33 @@ export async function POST(request: NextRequest) {
     const [, owner, repo] = match
 
     try {
-      // Analyze the repository in depth
-      const repoData = await analyzeRepository(octokit, owner, repo)
+      // Set a timeout for the entire operation
+      const timeoutPromise = new Promise((_, reject) => {
+        setTimeout(() => reject(new Error('Operation timed out')), 25000) // 25 second timeout
+      })
 
-      // Generate README using Gemini AI
+      // Race between the actual operation and the timeout
+      const repoData = await Promise.race([
+        analyzeRepository(octokit, owner, repo),
+        timeoutPromise
+      ])
+
       const readme = await generateReadmeWithGemini(repoData)
 
       return NextResponse.json({ readme })
     } catch (error: any) {
-      // Handle GitHub API errors specifically
+      if (error.message === 'Operation timed out') {
+        return NextResponse.json(
+          { error: "Request timed out. The repository might be too large or complex." },
+          { status: 504 }
+        )
+      }
+
+      // Handle other specific errors...
       if (error.status === 404) {
         return NextResponse.json(
           { error: "Repository not found. Check the URL or provide an API key for private repositories." },
-          { status: 404 },
+          { status: 404 }
         )
       } else if (error.status === 403 && error.message.includes("rate limit")) {
         return NextResponse.json(
@@ -56,12 +73,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "Invalid GitHub API key or insufficient permissions." }, { status: 401 })
       }
 
-      throw error // Re-throw for general error handling
+      throw error
     }
   } catch (error) {
     console.error("Error generating README:", error)
     
-    // Ensure we always return a proper JSON response
     return NextResponse.json({ 
       error: error instanceof Error ? error.message : "Failed to generate README. Please try again later." 
     }, { 
