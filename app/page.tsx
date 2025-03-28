@@ -94,12 +94,6 @@ export default function Home() {
         }),
       })
 
-      // Check if the response is JSON
-      const contentType = response.headers.get("content-type")
-      if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Server returned an invalid response. Please try again later.")
-      }
-
       const data = await response.json()
 
       if (!response.ok) {
@@ -301,7 +295,7 @@ export default function Home() {
                     </AlertDescription>
                   </Alert>
 
-                  {!apiKeySaved && (
+                  {/* {!apiKeySaved && (
                     <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
                       <Info className="h-4 w-4" />
                       <AlertTitle>API Key Recommended</AlertTitle>
@@ -316,7 +310,7 @@ export default function Home() {
                         </Button>
                       </AlertDescription>
                     </Alert>
-                  )}
+                  )} */}
 
                   {error && (
                     <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
