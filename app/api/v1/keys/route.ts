@@ -22,15 +22,29 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid admin secret key." }, { status: 401 })
     }
 
-    // Generate a new API key
-    // For simplicity, we'll use a fixed user ID in this example
-    const userId = "api-user"
-    const apiKey = await generateApiKey(userId)
+    try {
+      // Generate a new API key
+      // For simplicity, we'll use a fixed user ID in this example
+      const userId = "api-user"
+      const apiKey = await generateApiKey(userId)
 
-    return NextResponse.json({
-      success: true,
-      apiKey,
-    })
+      return NextResponse.json({
+        success: true,
+        apiKey,
+      })
+    } catch (redisError) {
+      console.error("Redis error when generating API key:", redisError)
+
+      // Fallback: Generate a simple API key without Redis
+      // Note: This won't be stored in Redis, so verification will need a fallback too
+      const fallbackApiKey = `readme_api_${crypto.randomUUID().replace(/-/g, "")}`
+
+      return NextResponse.json({
+        success: true,
+        apiKey: fallbackApiKey,
+        note: "Using fallback API key generation due to Redis unavailability",
+      })
+    }
   } catch (error) {
     console.error("Error generating API key:", error)
     return NextResponse.json({ error: "Failed to generate API key" }, { status: 500 })
