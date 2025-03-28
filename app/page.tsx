@@ -94,17 +94,19 @@ export default function Home() {
         }),
       })
 
-      const data = await response.json()
+      const data = await response.json().catch(() => ({
+        error: "Failed to parse server response"
+      }))
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to generate README")
+        throw new Error(data.error || `Server error: ${response.status}`)
       }
 
       setReadme(data.readme)
       setActiveTab("preview")
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error generating README:", err)
-      setError(err.message || "An unexpected error occurred. Please try again later.")
+      setError(err instanceof Error ? err.message : "An unexpected error occurred. Please try again later.")
     } finally {
       setIsLoading(false)
     }

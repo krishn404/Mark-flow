@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
         { error: "Gemini API key is not configured. Please set the GEMINI_API_KEY environment variable." },
-        { status: 500 },
+        { status: 500 }
       )
     }
 
@@ -60,8 +60,13 @@ export async function POST(request: NextRequest) {
     }
   } catch (error) {
     console.error("Error generating README:", error)
-
-    return NextResponse.json({ error: "Failed to generate README. Please try again later." }, { status: 500 })
+    
+    // Ensure we always return a proper JSON response
+    return NextResponse.json({ 
+      error: error instanceof Error ? error.message : "Failed to generate README. Please try again later." 
+    }, { 
+      status: 500 
+    })
   }
 }
 
