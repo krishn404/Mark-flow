@@ -1,28 +1,22 @@
-import { NextResponse, type NextRequest } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { Octokit } from "@octokit/rest"
 import { analyzeRepository } from "@/lib/repo-analyzer"
 import { generateReadmeWithGemini } from "@/lib/gemini-client"
 
 export async function POST(request: NextRequest) {
   try {
-    // Validate request body
-    let body
-    try {
-      body = await request.json()
-    } catch (e) {
-      return NextResponse.json({ 
-        success: false,
-        error: "Invalid request body" 
-      }, { status: 400 })
-    }
-
-    const { repoUrl, apiKey } = body
+    const { repoUrl, apiKey } = await request.json()
 
     if (!repoUrl) {
-      return NextResponse.json({ 
-        success: false,
-        error: "Repository URL is required" 
-      }, { status: 400 })
+      return NextResponse.json({ error: "Repository URL is required" }, { status: 400 })
+    }
+
+    // Check if Gemini API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return NextResponse.json(
+        { error: "Gemini API key is not configured. Please set the GEMINI_API_KEY environment variable." },
+        { status: 500 },
+      )
     }
 
     // Initialize Octokit with API key if provided
@@ -33,10 +27,7 @@ export async function POST(request: NextRequest) {
     const match = repoUrl.match(urlPattern)
 
     if (!match) {
-      return NextResponse.json({ 
-        success: false,
-        error: "Invalid GitHub repository URL" 
-      }, { status: 400 })
+      return NextResponse.json({ error: "Invalid GitHub repository URL" }, { status: 400 })
     }
 
     const [, owner, repo] = match
@@ -48,38 +39,29 @@ export async function POST(request: NextRequest) {
       // Generate README using Gemini AI
       const readme = await generateReadmeWithGemini(repoData)
 
-      return NextResponse.json({ 
-        success: true,
-        readme 
-      })
+      return NextResponse.json({ readme })
     } catch (error: any) {
-      console.error("Repository analysis error:", error)
-      
+      // Handle GitHub API errors specifically
       if (error.status === 404) {
-        return NextResponse.json({ 
-          success: false,
-          error: "Repository not found. Please check the URL." 
-        }, { status: 404 })
-      }
-      
-      if (error.status === 403) {
-        return NextResponse.json({ 
-          success: false,
-          error: "GitHub API access error. Try adding your GitHub token for better access."
-        }, { status: 403 })
+        return NextResponse.json(
+          { error: "Repository not found. Check the URL or provide an API key for private repositories." },
+          { status: 404 },
+        )
+      } else if (error.status === 403 && error.message.includes("rate limit")) {
+        return NextResponse.json(
+          { error: "GitHub API rate limit exceeded. Please provide a GitHub API key." },
+          { status: 403 },
+        )
+      } else if (error.status === 401) {
+        return NextResponse.json({ error: "Invalid GitHub API key or insufficient permissions." }, { status: 401 })
       }
 
-      return NextResponse.json({ 
-        success: false,
-        error: "Failed to analyze repository. Please try again." 
-      }, { status: 500 })
+      throw error // Re-throw for general error handling
     }
   } catch (error) {
-    console.error("Unexpected error:", error)
-    return NextResponse.json({ 
-      success: false,
-      error: "An unexpected error occurred. Please try again." 
-    }, { status: 500 })
+    console.error("Error generating README:", error)
+
+    return NextResponse.json({ error: "Failed to generate README. Please try again later." }, { status: 500 })
   }
 }
 
