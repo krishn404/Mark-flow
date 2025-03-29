@@ -459,14 +459,14 @@ export default function Home() {
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
-                        onClick={() => setRepoUrl("https://github.com/vercel/v0")}
+                        onClick={() => setRepoUrl("https://github.com/krishn404/Mark-flow")}
                       >
                         <div className="mr-3 bg-purple-500/20 p-2 rounded-lg">
                           <Zap className="h-5 w-5 text-purple-400" />
                         </div>
                         <div>
-                          <h3 className="text-white font-medium text-sm mb-1">V0</h3>
-                          <p className="text-indigo-300 text-xs">vercel/v0</p>
+                          <h3 className="text-white font-medium text-sm mb-1">Mark-flow</h3>
+                          <p className="text-indigo-300 text-xs">krishn404/Mark-flow</p>
                         </div>
                       </motion.div>
 
