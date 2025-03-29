@@ -17,6 +17,9 @@ import {
   Code,
   BookOpen,
   Brain,
+  Zap,
+  Shield,
+  ArrowRight
 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -33,6 +36,10 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import ReactMarkdown from "react-markdown"
+import { auth } from "@/lib/firebase"
+import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth"
+import { motion, AnimatePresence } from "framer-motion"
+import { ReadmeLoadingOverlay } from "@/components/ReadmeLoadingOverlay"
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("")
@@ -45,6 +52,7 @@ export default function Home() {
   const [apiKeySaved, setApiKeySaved] = useState(false)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
+  const [user, setUser] = useState<any>(null)
 
   // Load API key from localStorage on component mount
   useEffect(() => {
@@ -57,6 +65,14 @@ export default function Home() {
 
     // Apply dark mode by default
     document.documentElement.classList.add("dark")
+  }, [])
+
+  // Add this useEffect for auth state
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user)
+    })
+    return () => unsubscribe()
   }, [])
 
   const saveApiKey = () => {
@@ -78,7 +94,29 @@ export default function Home() {
     setUseApiKey(false)
   }
 
+  // Add sign in/out functions
+  const signInWithGoogle = async () => {
+    const provider = new GoogleAuthProvider()
+    try {
+      await signInWithPopup(auth, provider)
+    } catch (error) {
+      console.error("Error signing in with Google:", error)
+    }
+  }
+
+  const handleSignOut = async () => {
+    try {
+      await signOut(auth)
+    } catch (error) {
+      console.error("Error signing out:", error)
+    }
+  }
+
   const generateReadme = async () => {
+    if (!user) {
+      setError("Please sign in to generate README")
+      return
+    }
     setIsLoading(true)
     setError("")
 
@@ -119,380 +157,573 @@ export default function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-black text-white">
-      <div className="mono-grid absolute inset-0 z-0 opacity-5 pointer-events-none"></div>
-      <div className="container mx-auto py-12 px-4 relative z-10">
-        <div className="max-w-5xl mx-auto">
-          <div className="text-center mb-16">
-            <div className="inline-block p-3 bg-white bg-opacity-10 rounded-full mb-6 mono-glow">
+    <main className="min-h-screen relative overflow-hidden bg-[#080320]">
+      <AnimatePresence>
+        {isLoading && <ReadmeLoadingOverlay />}
+      </AnimatePresence>
+
+      {/* Enhanced mesh gradient background with subtle animation */}
+      <div className="absolute inset-0 w-full h-full">
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.2, 1],
+            opacity: [0.2, 0.3, 0.2] 
+          }}
+          transition={{ 
+            duration: 8,
+            repeat: Infinity,
+            ease: "easeInOut" 
+          }}
+          className="absolute top-0 left-[-20%] w-[500px] h-[500px] rounded-full bg-purple-800/30 blur-[120px]" 
+        />
+        <motion.div 
+          animate={{ 
+            scale: [1, 1.1, 1],
+            opacity: [0.2, 0.25, 0.2] 
+          }}
+          transition={{ 
+            duration: 10,
+            repeat: Infinity,
+            ease: "easeInOut" 
+          }}
+          className="absolute top-[20%] right-[-20%] w-[600px] h-[600px] rounded-full bg-indigo-700/30 blur-[150px]" 
+        />
+        <div className="absolute bottom-[-20%] left-[20%] w-[700px] h-[700px] rounded-full bg-violet-900/40 blur-[140px]" />
+      </div>
+
+      {/* Header with hover effects */}
+      <header className="container mx-auto py-4 px-4 relative z-10">
+        <div className="flex justify-between items-center">
+          <motion.div 
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 400, damping: 10 }}
+            className="flex items-center gap-2 cursor-pointer"
+          >
+            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+              <Code className="h-4 w-4 text-white" />
             </div>
-            <h1 className="text-6xl font-bold mb-6 text-white mono-glitch">AI README Generator</h1>
-            <p className="text-xl text-gray-400 max-w-2xl mx-auto leading-relaxed">
-              Create comprehensive, professional README files for your GitHub repositories with just a URL.
-              <span className="block mt-2 text-white">Powered by Gemini AI for deep code analysis.</span>
-            </p>
-          </div>
-
-          <div className="grid gap-8 mb-16">
-            <Card className="border-0 bg-zinc-900 shadow-mono rounded-xl overflow-hidden backdrop-blur-sm border-t border-zinc-800">
-              <CardHeader className="pb-2 border-b border-zinc-800">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <CardTitle className="text-2xl text-white flex items-center gap-2">
-                      <Brain className="h-5 w-5 text-white" />
-                      <span>Generate Your README</span>
-                    </CardTitle>
-                    <CardDescription className="text-gray-400">
-                      Enter a GitHub repository URL to analyze code and generate a detailed README file.
-                    </CardDescription>
-                  </div>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="text-gray-400 hover:text-white hover:bg-zinc-800"
-                            >
-                              <Settings className="h-5 w-5" />
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="bg-zinc-900 border border-zinc-800 text-white">
-                            <DialogHeader>
-                              <DialogTitle className="text-white">API Settings</DialogTitle>
-                              <DialogDescription className="text-gray-400">
-                                Configure your GitHub API key to access private repositories and avoid rate limits.
-                              </DialogDescription>
-                            </DialogHeader>
-                            <div className="space-y-4 py-4">
-                              <div className="space-y-2">
-                                <Label htmlFor="github-api-key" className="text-gray-300">
-                                  GitHub API Key
-                                </Label>
-                                <Input
-                                  id="github-api-key"
-                                  type="password"
-                                  placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
-                                  value={githubApiKey}
-                                  onChange={(e) => setGithubApiKey(e.target.value)}
-                                  className="bg-zinc-800 border-zinc-700 text-white"
-                                />
-                                <p className="text-sm text-gray-400">
-                                  Create a personal access token with{" "}
-                                  <code className="bg-zinc-800 px-1 rounded text-white">repo</code> scope at{" "}
-                                  <a
-                                    href="https://github.com/settings/tokens"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="text-white hover:underline"
-                                  >
-                                    GitHub Settings
-                                  </a>
-                                </p>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <Switch
-                                  id="use-api-key"
-                                  checked={useApiKey}
-                                  onCheckedChange={setUseApiKey}
-                                  disabled={!apiKeySaved}
-                                  className="data-[state=checked]:bg-white"
-                                />
-                                <Label htmlFor="use-api-key" className="text-gray-300">
-                                  Use API Key for requests
-                                </Label>
-                              </div>
-                              {apiKeySaved && (
-                                <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
-                                  <CheckCircle className="h-4 w-4" />
-                                  <AlertTitle>API Key Saved</AlertTitle>
-                                  <AlertDescription>
-                                    Your GitHub API key is saved in your browser's local storage.
-                                  </AlertDescription>
-                                </Alert>
-                              )}
-                            </div>
-                            <DialogFooter className="flex justify-between sm:justify-between">
-                              <Button
-                                variant="destructive"
-                                onClick={clearApiKey}
-                                disabled={!apiKeySaved}
-                                className="bg-zinc-800 hover:bg-zinc-700 text-white"
-                              >
-                                Clear API Key
-                              </Button>
-                              <Button
-                                onClick={saveApiKey}
-                                disabled={!githubApiKey}
-                                className="bg-white hover:bg-gray-200 text-black"
-                              >
-                                Save API Key
-                              </Button>
-                            </DialogFooter>
-                          </DialogContent>
-                        </Dialog>
-                      </TooltipTrigger>
-                      <TooltipContent className="bg-zinc-900 text-white border-zinc-800">
-                        <p>API Settings</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+            <span className="text-white font-semibold text-xl">ReadmeAI</span>
+          </motion.div>
+          <div className="flex items-center gap-4">
+            {/* <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
+              Documentation
+            </Button>
+            <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
+              Blog
+            </Button>
+            <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
+              About
+            </Button> */}
+            {user ? (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
+                  <img 
+                    src={user.photoURL} 
+                    alt={user.displayName} 
+                    className="w-8 h-8 rounded-full"
+                  />
+                  <span className="text-white">{user.displayName}</span>
                 </div>
-              </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <div className="flex gap-2">
-                      <div className="relative flex-1">
-                        <Input
-                          id="repo-url"
-                          placeholder="https://github.com/username/repository"
-                          value={repoUrl}
-                          onChange={(e) => setRepoUrl(e.target.value)}
-                          className="pr-10 bg-zinc-800/50 border-zinc-700 text-white placeholder:text-gray-500 focus:border-white focus:ring-white"
-                        />
-                        {useApiKey && apiKeySaved && (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                                  <CheckCircle className="h-4 w-4 text-white" />
-                                </div>
-                              </TooltipTrigger>
-                              <TooltipContent className="bg-zinc-900 text-white border-zinc-800">
-                                <p>Using authenticated API access</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                      </div>
-                      <Button
-                        onClick={generateReadme}
-                        disabled={isLoading || !repoUrl}
-                        className="whitespace-nowrap bg-white hover:bg-gray-200 text-black border-0 shadow-mono-sm"
-                      >
-                        {isLoading ? (
-                          <>
-                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            Analyzing...
-                          </>
-                        ) : (
-                          <>
-                            <Brain className="mr-2 h-4 w-4" />
-                            Generate README
-                          </>
-                        )}
-                      </Button>
-                    </div>
-                  </div>
-
-                  <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
-                    <Info className="h-4 w-4" />
-                    <AlertTitle>Deep Repository Analysis</AlertTitle>
-                    <AlertDescription>
-                      This tool analyzes your repository's code structure, functions, dependencies, and architecture to
-                      generate a comprehensive README using Gemini AI.
-                    </AlertDescription>
-                  </Alert>
-
-                  {/* {!apiKeySaved && (
-                    <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
-                      <Info className="h-4 w-4" />
-                      <AlertTitle>API Key Recommended</AlertTitle>
-                      <AlertDescription>
-                        Using a GitHub API key allows access to private repositories and avoids rate limits.{" "}
-                        <Button
-                          variant="link"
-                          className="p-0 h-auto text-white underline"
-                          onClick={() => setSettingsOpen(true)}
-                        >
-                          Add your API key
-                        </Button>
-                      </AlertDescription>
-                    </Alert>
-                  )} */}
-
-                  {error && (
-                    <Alert className="bg-white bg-opacity-5 border border-white border-opacity-20 text-white">
-                      <AlertCircle className="h-4 w-4" />
-                      <AlertTitle>Error</AlertTitle>
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-
-            {readme && (
-              <Card className="border-0 bg-zinc-900 shadow-mono rounded-xl overflow-hidden backdrop-blur-sm border-t border-zinc-800">
-                <CardHeader className="pb-2 border-b border-zinc-800">
-                  <div className="flex justify-between items-center">
-                    <div>
-                      <CardTitle className="text-2xl text-white flex items-center gap-2">
-                        <FileText className="h-5 w-5 text-white" />
-                        <span>Generated README</span>
-                      </CardTitle>
-                      <CardDescription className="text-gray-400">
-                        Preview and edit your AI-generated README before using it.
-                      </CardDescription>
-                    </div>
-                    <Button
-                      variant="outline"
-                      onClick={copyToClipboard}
-                      className="border-zinc-700 text-gray-300 hover:bg-zinc-800 hover:text-white transition-all"
-                    >
-                      {copySuccess ? (
-                        <>
-                          <CheckCircle className="mr-2 h-4 w-4 text-white" />
-                          Copied!
-                        </>
-                      ) : (
-                        <>
-                          <Copy className="mr-2 h-4 w-4" />
-                          Copy to Clipboard
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent className="pt-6">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-                    <TabsList className="grid w-full grid-cols-2 bg-zinc-800 p-1">
-                      <TabsTrigger
-                        value="preview"
-                        className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white text-gray-400"
-                      >
-                        <FileText className="mr-2 h-4 w-4" />
-                        Preview
-                      </TabsTrigger>
-                      <TabsTrigger
-                        value="markdown"
-                        className="data-[state=active]:bg-zinc-700 data-[state=active]:text-white text-gray-400"
-                      >
-                        <Github className="mr-2 h-4 w-4" />
-                        Markdown
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="preview" className="mt-4">
-                      <div className="border border-zinc-800 rounded-md p-6 bg-zinc-900 shadow-inner">
-                        <div className="prose dark:prose-invert max-w-none prose-headings:text-white prose-a:text-gray-300 prose-code:bg-zinc-800 prose-code:text-white prose-pre:bg-zinc-800 prose-pre:text-gray-300 prose-strong:text-white">
-                          <ReactMarkdown>{readme}</ReactMarkdown>
-                        </div>
-                      </div>
-                    </TabsContent>
-                    <TabsContent value="markdown" className="mt-4">
-                      <Textarea
-                        className="min-h-[500px] font-mono bg-zinc-800/50 border-zinc-700 text-white resize-none"
-                        value={readme}
-                        onChange={(e) => setReadme(e.target.value)}
-                      />
-                    </TabsContent>
-                  </Tabs>
-                </CardContent>
-              </Card>
+                <Button
+                  onClick={handleSignOut}
+                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full px-4"
+                >
+                  Sign Out
+                </Button>
+              </div>
+            ) : (
+              <Button
+                onClick={signInWithGoogle}
+                className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-full px-4"
+              >
+                Sign In with Google
+              </Button>
             )}
           </div>
+        </div>
+      </header>
 
-          <div className="space-y-16">
-            <div>
-              <h2 className="text-3xl font-bold mb-8 text-center text-white">Features</h2>
-              <div className="grid md:grid-cols-3 gap-6">
-                <Card className="border-0 bg-zinc-900/50 hover:bg-zinc-900 transition-all duration-300 backdrop-blur-sm rounded-xl overflow-hidden group">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-white">
-                      <div className="bg-white bg-opacity-10 p-2 rounded-lg group-hover:shadow-mono-sm transition-all duration-300">
-                        <Brain className="h-5 w-5 text-white" />
-                      </div>
-                      <span>AI-Powered Analysis</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-400">
-                      Uses Gemini AI to analyze code structure, functions, and architecture to generate intelligent
-                      documentation.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border-0 bg-zinc-900/50 hover:bg-zinc-900 transition-all duration-300 backdrop-blur-sm rounded-xl overflow-hidden group">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-white">
-                      <div className="bg-white bg-opacity-10 p-2 rounded-lg group-hover:shadow-mono-sm transition-all duration-300">
-                        <Code className="h-5 w-5 text-white" />
-                      </div>
-                      <span>Deep Code Insights</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-400">
-                      Examines your codebase to identify patterns, frameworks, and architecture to explain your
-                      project's technical implementation.
-                    </p>
-                  </CardContent>
-                </Card>
-                <Card className="border-0 bg-zinc-900/50 hover:bg-zinc-900 transition-all duration-300 backdrop-blur-sm rounded-xl overflow-hidden group">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-3 text-white">
-                      <div className="bg-white bg-opacity-10 p-2 rounded-lg group-hover:shadow-mono-sm transition-all duration-300">
-                        <BookOpen className="h-5 w-5 text-white" />
-                      </div>
-                      <span>Comprehensive Documentation</span>
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-400">
-                      Creates detailed documentation including tech stack, architecture, installation instructions, and
-                      usage guides tailored to your project.
-                    </p>
-                  </CardContent>
-                </Card>
-              </div>
+      <div className="container mx-auto py-12 px-4 relative z-10">
+        {user ? (
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <div className="inline-flex h-full animate-background-shine cursor-pointer items-center justify-center rounded-full border border-indigo-400/20 bg-[linear-gradient(110deg,#000B1F,45%,#4C1D95,55%,#000B1F)] bg-[length:250%_100%] px-4 py-1.5 text-sm font-medium text-violet-300 tracking-wider uppercase mb-4 backdrop-blur-sm">
+              Documentation Assistant
             </div>
+            <h1 className="text-5xl font-normal mb-6 leading-tight tracking-tight bg-gradient-to-r from-indigo-300 via-purple-400 to-pink-300 text-transparent bg-clip-text">
+              Readme <span className="font-bold">Assistant</span> for Your
+              <span className="font-bold"> Project</span>
+            </h1>
+            <p className="text-lg text-indigo-200/90 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
+              Accept repository details and let ReadmeAI analyze your codebase to generate professional documentation in seconds.
+            </p>
+            
+            <div className="grid gap-10">
+              <Card className="bg-indigo-950/40 backdrop-blur-xl border border-indigo-500/20 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(79_70_229/0.3)]">
+                <CardHeader className="pb-4 border-b border-indigo-500/20">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <CardTitle className="text-xl font-normal text-white flex items-center gap-2">
+                        <Brain className="h-5 w-5 text-indigo-400" />
+                        <span>Generate Your README</span>
+                      </CardTitle>
+                      <CardDescription className="text-sm text-indigo-200/80 font-light mt-1">
+                        Enter a GitHub repository URL to analyze code and generate a detailed README file.
+                      </CardDescription>
+                    </div>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="text-indigo-300 hover:text-white hover:bg-indigo-900/50"
+                              >
+                                <Settings className="h-5 w-5" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="bg-indigo-950 border border-indigo-600/30 text-white">
+                              <DialogHeader>
+                                <DialogTitle className="text-white">API Settings</DialogTitle>
+                                <DialogDescription className="text-indigo-300">
+                                  Configure your GitHub API key to access private repositories and avoid rate limits.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <div className="space-y-4 py-4">
+                                <div className="space-y-2">
+                                  <Label htmlFor="github-api-key" className="text-indigo-200">
+                                    GitHub API Key
+                                  </Label>
+                                  <Input
+                                    id="github-api-key"
+                                    type="password"
+                                    placeholder="ghp_xxxxxxxxxxxxxxxxxxxx"
+                                    value={githubApiKey}
+                                    onChange={(e) => setGithubApiKey(e.target.value)}
+                                    className="bg-indigo-900/40 border-indigo-600/30 text-white focus:border-purple-500 focus:ring-purple-500/30"
+                                  />
+                                  <p className="text-sm text-indigo-300">
+                                    Create a personal access token with{" "}
+                                    <code className="bg-indigo-900/60 px-1 rounded text-indigo-200">repo</code> scope at{" "}
+                                    <a
+                                      href="https://github.com/settings/tokens"
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="text-purple-400 hover:underline"
+                                    >
+                                      GitHub Settings
+                                    </a>
+                                  </p>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <Switch
+                                    id="use-api-key"
+                                    checked={useApiKey}
+                                    onCheckedChange={setUseApiKey}
+                                    disabled={!apiKeySaved}
+                                    className="data-[state=checked]:bg-purple-500"
+                                  />
+                                  <Label htmlFor="use-api-key" className="text-indigo-200">
+                                    Use API Key for requests
+                                  </Label>
+                                </div>
+                                {apiKeySaved && (
+                                  <Alert className="bg-purple-900/20 border border-purple-500/30 text-indigo-200">
+                                    <CheckCircle className="h-4 w-4 text-purple-400" />
+                                    <AlertTitle>API Key Saved</AlertTitle>
+                                    <AlertDescription>
+                                      Your GitHub API key is saved in your browser's local storage.
+                                    </AlertDescription>
+                                  </Alert>
+                                )}
+                              </div>
+                              <DialogFooter className="flex justify-between sm:justify-between">
+                                <Button
+                                  variant="destructive"
+                                  onClick={clearApiKey}
+                                  disabled={!apiKeySaved}
+                                  className="bg-red-900/40 hover:bg-red-800/60 text-white border border-red-500/30"
+                                >
+                                  Clear API Key
+                                </Button>
+                                <Button
+                                  onClick={saveApiKey}
+                                  disabled={!githubApiKey}
+                                  className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white"
+                                >
+                                  Save API Key
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-indigo-900 text-white border-indigo-700">
+                          <p>API Settings</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-8">
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex gap-3">
+                        <div className="relative flex-1">
+                          <motion.div 
+                            animate={{ 
+                              width: ["0%", "100%", "0%"]
+                            }}
+                            transition={{ 
+                              duration: 2,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                            className="absolute -top-[1px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
+                          />
+                          <Input
+                            id="repo-url"
+                            placeholder="https://github.com/username/repository"
+                            value={repoUrl}
+                            onChange={(e) => setRepoUrl(e.target.value)}
+                            className="h-12 px-4 bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60"
+                          />
+                          {useApiKey && apiKeySaved && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                    <CheckCircle className="h-5 w-5 text-purple-500" />
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-indigo-900/90 backdrop-blur-sm text-white border-indigo-700/30">
+                                  <p>Using authenticated API access</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
+                        </div>
+                        <Button
+                          onClick={generateReadme}
+                          disabled={isLoading || !repoUrl}
+                          className="h-12 px-6 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl transition-all duration-300 relative overflow-hidden"
+                        >
+                          {isLoading && (
+                            <motion.div
+                              className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
+                              animate={{ x: ["-100%", "100%"] }}
+                              transition={{ 
+                                duration: 1,
+                                repeat: Infinity,
+                                ease: "linear"
+                              }}
+                            />
+                          )}
+                          {isLoading ? (
+                            <>
+                              <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                              Analyzing...
+                            </>
+                          ) : (
+                            <>
+                              <Zap className="mr-2 h-5 w-5" />
+                              Generate README
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    </div>
 
-            <div className="bg-zinc-900 rounded-xl p-8 border border-zinc-800 shadow-mono">
-              <h2 className="text-3xl font-bold mb-8 text-center text-white">Why Use This Tool?</h2>
-              <div className="grid md:grid-cols-2 gap-8">
-                <Card className="border-0 shadow-lg bg-black/30 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold flex items-center gap-2 text-white">
-                      <div className="p-1.5 rounded-full bg-white bg-opacity-10 text-white">
-                        <AlertCircle className="h-5 w-5" />
+                    <div className="grid grid-cols-3 gap-4">
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
+                        onClick={() => setRepoUrl("https://github.com/facebook/react")}
+                      >
+                        <div className="mr-3 bg-purple-500/20 p-2 rounded-lg">
+                          <Code className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-medium text-sm mb-1">React</h3>
+                          <p className="text-indigo-300 text-xs">facebook/react</p>
+                        </div>
+                      </motion.div>
+
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
+                        onClick={() => setRepoUrl("https://github.com/vercel/v0")}
+                      >
+                        <div className="mr-3 bg-purple-500/20 p-2 rounded-lg">
+                          <Zap className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-medium text-sm mb-1">V0</h3>
+                          <p className="text-indigo-300 text-xs">vercel/v0</p>
+                        </div>
+                      </motion.div>
+
+                      <motion.div 
+                        whileHover={{ scale: 1.02 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                        className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
+                        onClick={() => setRepoUrl("https://github.com/github/docs")}
+                      >
+                        <div className="mr-3 bg-purple-500/20 p-2 rounded-lg">
+                          <Github className="h-5 w-5 text-purple-400" />
+                        </div>
+                        <div>
+                          <h3 className="text-white font-medium text-sm mb-1">GitHub Docs</h3>
+                          <p className="text-indigo-300 text-xs">github/docs</p>
+                        </div>
+                      </motion.div>
+                    </div>
+
+                    {error && (
+                      <Alert className="bg-red-900/20 backdrop-blur-sm border border-red-500/30 text-red-300">
+                        <AlertCircle className="h-4 w-4" />
+                        <AlertTitle>Error</AlertTitle>
+                        <AlertDescription>{error}</AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {readme && (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                >
+                  <Card className="bg-indigo-950/40 backdrop-blur-xl border border-indigo-500/20 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(79_70_229/0.3)] mt-10">
+                    <CardHeader className="pb-4 border-b border-indigo-500/20">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <CardTitle className="text-xl font-normal text-white flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-indigo-400" />
+                            <span>Generated README</span>
+                          </CardTitle>
+                          <CardDescription className="text-sm text-indigo-200/80 font-light mt-1">
+                            Preview and edit your AI-generated README before using it.
+                          </CardDescription>
+                        </div>
+                        <Button
+                          variant="outline"
+                          onClick={copyToClipboard}
+                          className="border-indigo-500/30 text-indigo-200 hover:bg-indigo-800/50 hover:text-white transition-all text-sm"
+                        >
+                          {copySuccess ? (
+                            <>
+                              <CheckCircle className="mr-2 h-4 w-4 text-green-400" />
+                              Copied!
+                            </>
+                          ) : (
+                            <>
+                              <Copy className="mr-2 h-4 w-4" />
+                              Copy to Clipboard
+                            </>
+                          )}
+                        </Button>
                       </div>
-                      Problem
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-400">
-                      Creating comprehensive README files that explain your code's architecture, tech stack, and
-                      functionality is time-consuming and often overlooked. Many repositories lack proper technical
-                      documentation.
-                    </p>
-                  </CardContent>
+                    </CardHeader>
+                    <CardContent className="pt-8">
+                      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                        <TabsList className="grid w-full grid-cols-2 bg-indigo-900/20 p-1 rounded-lg">
+                          <TabsTrigger
+                            value="preview"
+                            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white text-indigo-300 text-sm rounded-md"
+                          >
+                            <FileText className="mr-2 h-4 w-4" />
+                            Preview
+                          </TabsTrigger>
+                          <TabsTrigger
+                            value="markdown"
+                            className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white text-indigo-300 text-sm rounded-md"
+                          >
+                            <Github className="mr-2 h-4 w-4" />
+                            Markdown
+                          </TabsTrigger>
+                        </TabsList>
+                        <TabsContent value="preview" className="mt-4">
+                          <div className="border border-indigo-600/20 rounded-xl p-6 bg-indigo-900/20 shadow-inner">
+                            <div className="prose dark:prose-invert max-w-none prose-headings:text-white prose-a:text-purple-400 prose-code:bg-indigo-900/60 prose-code:text-indigo-200 prose-pre:bg-indigo-900/60 prose-pre:text-indigo-200 prose-strong:text-indigo-100">
+                              <ReactMarkdown>{readme}</ReactMarkdown>
+                            </div>
+                          </div>
+                        </TabsContent>
+                        <TabsContent value="markdown" className="mt-4">
+                          <Textarea
+                            className="min-h-[500px] font-mono bg-indigo-900/30 border-indigo-600/30 text-white resize-none"
+                            value={readme}
+                            onChange={(e) => setReadme(e.target.value)}
+                          />
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              )}
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="max-w-4xl mx-auto text-center"
+          >
+            <h1 className="text-6xl font-normal mb-6 leading-tight tracking-tight bg-gradient-to-r from-indigo-300 via-purple-400 to-pink-300 text-transparent bg-clip-text">
+              Generate Professional <span className="font-bold">README</span> Files with AI
+            </h1>
+            <p className="text-xl text-indigo-200/90 max-w-2xl mx-auto leading-relaxed mb-12">
+              Transform your repository documentation with our AI-powered README generator. 
+              Sign in to get started.
+            </p>
+            <Button
+              onClick={signInWithGoogle}
+              className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white rounded-xl px-8 py-6 text-lg"
+            >
+              <Github className="mr-2 h-5 w-5" />
+              Sign In with Google to Get Started
+            </Button>
+          </motion.div>
+        )}
+        
+        {/* Stats Section */}
+        {!readme && !user && (
+          <div className="max-w-4xl mx-auto mt-20 text-center">
+            <h2 className="text-3xl font-light mb-8 text-white">Trusted by <span className="font-medium">leading developers</span></h2>
+            
+            <motion.div 
+              className="grid grid-cols-4 gap-4"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
+                  <div className="flex justify-center mb-2">
+                    <Shield className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">99.9%</div>
+                  <div className="text-indigo-300 text-sm">Successful Analysis</div>
                 </Card>
-                <Card className="border-0 shadow-lg bg-black/30 backdrop-blur-sm">
-                  <CardHeader>
-                    <CardTitle className="text-xl font-semibold flex items-center gap-2 text-white">
-                      <div className="p-1.5 rounded-full bg-white bg-opacity-10 text-white">
-                        <CheckCircle className="h-5 w-5" />
-                      </div>
-                      Solution
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-400">
-                      This tool uses AI to analyze your entire codebase, understand your project's architecture, and
-                      generate a detailed README that explains your tech stack, functionality, and implementation
-                      details automatically.
-                    </p>
-                  </CardContent>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
+                  <div className="flex justify-center mb-2">
+                    <FileText className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">500k+</div>
+                  <div className="text-indigo-300 text-sm">READMEs Generated</div>
                 </Card>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
+                  <div className="flex justify-center mb-2">
+                    <Code className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">20M+</div>
+                  <div className="text-indigo-300 text-sm">Code Files Analyzed</div>
+                </Card>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                transition={{ type: "spring", stiffness: 400, damping: 10 }}
+              >
+                <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
+                  <div className="flex justify-center mb-2">
+                    <Github className="h-6 w-6 text-purple-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-white mb-1">80%</div>
+                  <div className="text-indigo-300 text-sm">User Satisfaction</div>
+                </Card>
+              </motion.div>
+            </motion.div>
+          </div>
+        )}
+        
+        {/* FAQ Section */}
+        {!readme && !user && (
+          <motion.div 
+            className="max-w-3xl mx-auto mt-20 mb-12"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <h2 className="text-3xl font-light mb-8 text-white text-center">Frequently Asked <span className="font-medium">Questions</span></h2>
+            
+            <div className="space-y-4">
+              <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
+                <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
+                  <span>How does ReadmeAI work?</span>
+                  <ArrowRight className="h-5 w-5 text-purple-400" />
+                </CardTitle>
+                <CardDescription className="text-indigo-200">
+                  ReadmeAI analyzes your repository's code structure, functions, dependencies, and architecture to generate a comprehensive README using advanced AI models.
+                </CardDescription>
+              </Card>
+              
+              <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
+                <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
+                  <span>Is my code secure when using ReadmeAI?</span>
+                  <ArrowRight className="h-5 w-5 text-purple-400" />
+                </CardTitle>
+                <CardDescription className="text-indigo-200">
+                  Yes, all repository analysis happens securely. We never store your code and all processing is done with strict privacy protocols in place.
+                </CardDescription>
+              </Card>
+              
+              <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
+                <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
+                  <span>Why do I need a GitHub API key?</span>
+                  <ArrowRight className="h-5 w-5 text-purple-400" />
+                </CardTitle>
+                <CardDescription className="text-indigo-200">
+                  A GitHub API key allows ReadmeAI to access private repositories and avoids rate limits when analyzing larger projects. It's optional but recommended.
+                </CardDescription>
+              </Card>
+            </div>
+          </motion.div>
+        )}
+      </div>
+      
+      {/* Footer */}
+      <footer className="relative z-10 border-t border-indigo-500/20 mt-10">
+        <div className="container mx-auto py-6 px-4">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
+                <Code className="h-4 w-4 text-white" />
               </div>
+              <span className="text-white font-semibold">ReadmeAI</span>
+            </div>
+            <div className="text-indigo-400 text-sm">
+              © 2025 ReadmeAI. All rights reserved.
             </div>
           </div>
         </div>
-      </div>
+      </footer>
     </main>
   )
 }
-

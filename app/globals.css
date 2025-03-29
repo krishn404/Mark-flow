@@ -4,15 +4,22 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    /* Modern color palette inspired by Gitroom */
+    --primary-purple: 265 89% 66%;
+    --primary-blue: 224 76% 48%;
+    --space-black: 240 24% 4%;
+    --star-white: 0 0% 100%;
+    
+    /* Update existing variables */
+    --background: var(--space-black);
+    --foreground: var(--star-white);
+    --primary: var(--primary-purple);
+    --secondary: var(--primary-blue);
     --card: 0 0% 100%;
     --card-foreground: 0 0% 3.9%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
     --muted: 0 0% 96.1%;
     --muted-foreground: 0 0% 45.1%;
@@ -108,6 +115,108 @@
     100% {
       clip: rect(0, 900px, 0, 0);
     }
+  }
+
+  .modern-gradient {
+    background: radial-gradient(125% 125% at 50% 10%, #fff 40%, #63e 100%);
+  }
+
+  .glass-effect {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+  }
+
+  .hover-glass {
+    transition: all 0.3s ease;
+  }
+
+  .hover-glass:hover {
+    background: rgba(255, 255, 255, 0.8);
+    transform: translateY(-2px);
+  }
+
+  .subtle-shadow {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+  }
+
+  .space-gradient {
+    background: radial-gradient(ellipse at top, hsl(265 89% 66% / 0.15), transparent),
+                radial-gradient(ellipse at bottom, hsl(224 76% 48% / 0.15), transparent);
+  }
+  
+  .glass-card {
+    background: rgba(255, 255, 255, 0.03);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  }
+  
+  .glow-effect {
+    box-shadow: 0 0 20px 2px hsl(var(--primary-purple) / 0.2);
+  }
+
+  .star-field {
+    background-image: radial-gradient(2px 2px at 20px 30px, #ffffff, rgba(0,0,0,0)),
+                      radial-gradient(2px 2px at 40px 70px, #ffffff, rgba(0,0,0,0)),
+                      radial-gradient(2px 2px at 50px 160px, #ffffff, rgba(0,0,0,0));
+    background-size: 200px 200px;
+  }
+
+  .search-glow {
+    box-shadow: 0 0 20px 2px rgba(147, 51, 234, 0.07);
+  }
+  
+  .input-background {
+    background: rgba(17, 17, 17, 0.3);
+    backdrop-filter: blur(8px);
+  }
+  
+  .purple-glow {
+    box-shadow: 0 0 30px 5px rgba(147, 51, 234, 0.2);
+  }
+  
+  .floating {
+    animation: floating 3s ease-in-out infinite;
+  }
+  
+  .floating-delayed {
+    animation: floating 3s ease-in-out 1.5s infinite;
+  }
+  
+  @keyframes floating {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+  
+  .gradient-border {
+    background: linear-gradient(to right, rgba(147, 51, 234, 0.2), rgba(79, 70, 229, 0.2));
+    border: 1px solid rgba(147, 51, 234, 0.1);
+  }
+
+  .github-grid {
+    background-size: 30px 30px;
+    background-image: 
+      linear-gradient(to right, rgba(48, 54, 61, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(48, 54, 61, 0.1) 1px, transparent 1px);
+    animation: grid-fade 10s infinite;
+  }
+
+  .github-dots {
+    background-image: radial-gradient(circle, rgba(48, 54, 61, 0.3) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: dots-float 15s infinite linear;
+  }
+
+  @keyframes grid-fade {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 0.6; }
+  }
+
+  @keyframes dots-float {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+    100% { transform: translateY(0); }
   }
 }
 

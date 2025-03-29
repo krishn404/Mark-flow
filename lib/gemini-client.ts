@@ -54,7 +54,7 @@ export async function generateReadmeWithGemini(repoData: any) {
 
   // Create a detailed prompt for Gemini
   const prompt = `
-Generate a comprehensive, professional README.md file for a GitHub repository with the following information:
+Generate a comprehensive, professional README.md file for a GitHub repository. Use standard well-aligned markdown formatting throughout the document. Do not use HTML center tags or other centering methods.
 
 REPOSITORY INFORMATION:
 - Name: ${repoInfo.name}

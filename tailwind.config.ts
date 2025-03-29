@@ -68,10 +68,26 @@ const config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
+        'background-shine': {
+          from: { backgroundPosition: '200% 0' },
+          to: { backgroundPosition: '-200% 0' },
+        },
+        'border-width': {
+          'from': {
+            width: '10px',
+            opacity: '0'
+          },
+          'to': {
+            width: '100px',
+            opacity: '1'
+          }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        'background-shine': 'background-shine 8s linear infinite',
+        'border-width': 'border-width 3s infinite alternate'
       },
       typography: (theme) => ({
         DEFAULT: {
