@@ -202,7 +202,7 @@ export default function Home() {
             <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
               <Code className="h-4 w-4 text-white" />
             </div>
-            <span className="text-white font-semibold text-xl">ReadmeAI</span>
+            <span className="text-white font-semibold text-xl">Mark FLow</span>
           </motion.div>
           <div className="flex items-center gap-4">
             {/* <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
@@ -259,7 +259,7 @@ export default function Home() {
               <span className="font-bold"> Project</span>
             </h1>
             <p className="text-lg text-indigo-200/90 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-              Accept repository details and let ReadmeAI analyze your codebase to generate professional documentation in seconds.
+              Accept repository details and let Mark FLow analyze your codebase to generate professional documentation in seconds.
             </p>
             
             <div className="grid gap-10">
@@ -676,17 +676,17 @@ export default function Home() {
             <div className="space-y-4">
               <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
                 <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
-                  <span>How does ReadmeAI work?</span>
+                  <span>How does Mark FLow work?</span>
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
-                  ReadmeAI analyzes your repository's code structure, functions, dependencies, and architecture to generate a comprehensive README using advanced AI models.
+                  Mark FLow analyzes your repository's code structure, functions, dependencies, and architecture to generate a comprehensive README using advanced AI models.
                 </CardDescription>
               </Card>
               
               <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
                 <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
-                  <span>Is my code secure when using ReadmeAI?</span>
+                  <span>Is my code secure when using Mark FLow?</span>
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
@@ -700,7 +700,7 @@ export default function Home() {
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
-                  A GitHub API key allows ReadmeAI to access private repositories and avoids rate limits when analyzing larger projects. It's optional but recommended.
+                  A GitHub API key allows Mark FLow to access private repositories and avoids rate limits when analyzing larger projects. It's optional but recommended.
                 </CardDescription>
               </Card>
             </div>
@@ -716,10 +716,10 @@ export default function Home() {
               <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
                 <Code className="h-4 w-4 text-white" />
               </div>
-              <span className="text-white font-semibold">ReadmeAI</span>
+              <span className="text-white font-semibold">Mark FLow</span>
             </div>
             <div className="text-indigo-400 text-sm">
-              © 2025 ReadmeAI. All rights reserved.
+              © 2025 Mark FLow. All rights reserved.
             </div>
           </div>
         </div>
