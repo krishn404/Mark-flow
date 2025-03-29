@@ -3,7 +3,7 @@ import { Octokit } from "@octokit/rest"
 import { analyzeRepository } from "@/lib/repo-analyzer"
 import { generateReadmeWithGemini } from "@/lib/gemini-client"
 
-export const maxDuration = 300 // Set maximum duration to 5 minutes
+export const maxDuration = 60 // Set maximum duration to 60 seconds (maximum allowed for hobby plan)
 export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     try {
       // Set a timeout for the entire operation
       const timeoutPromise = new Promise((_, reject) => {
-        setTimeout(() => reject(new Error('Operation timed out')), 25000) // 25 second timeout
+        setTimeout(() => reject(new Error('Operation timed out')), 55000) // 55 second timeout
       })
 
       // Race between the actual operation and the timeout
