@@ -14,26 +14,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Repository URL is required" }, { status: 400 })
     }
 
-    // Check if Gemini API key is configured
-    if (!process.env.GEMINI_API_KEY) {
-      return NextResponse.json(
-        { error: "Gemini API key is not configured" },
-        { status: 500 }
-      )
-    }
-
-    // Initialize Octokit with API key if provided
-    const octokit = apiKey ? new Octokit({ auth: apiKey }) : new Octokit()
-
-    // Parse GitHub URL to extract owner and repo
-    const urlPattern = /github\.com\/([^/]+)\/([^/]+)/
-    const match = repoUrl.match(urlPattern)
-
+    // Extract owner and repo from URL
+    const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
     if (!match) {
       return NextResponse.json({ error: "Invalid GitHub repository URL" }, { status: 400 })
     }
 
     const [, owner, repo] = match
+
+    // Initialize Octokit with API key if provided
+    const octokit = new Octokit({
+      auth: apiKey || process.env.GITHUB_ACCESS_TOKEN, // Fallback to environment variable
+    })
 
     try {
       // Set a timeout for the entire operation
@@ -58,16 +50,20 @@ export async function POST(request: NextRequest) {
         )
       }
 
+      if (error.status === 403) {
+        return NextResponse.json(
+          {
+            error: "GitHub API rate limit exceeded. Please provide a GitHub API token in the settings.",
+          },
+          { status: 403 }
+        )
+      }
+
       // Handle other specific errors...
       if (error.status === 404) {
         return NextResponse.json(
           { error: "Repository not found. Check the URL or provide an API key for private repositories." },
           { status: 404 }
-        )
-      } else if (error.status === 403 && error.message.includes("rate limit")) {
-        return NextResponse.json(
-          { error: "GitHub API rate limit exceeded. Please provide a GitHub API key." },
-          { status: 403 },
         )
       } else if (error.status === 401) {
         return NextResponse.json({ error: "Invalid GitHub API key or insufficient permissions." }, { status: 401 })

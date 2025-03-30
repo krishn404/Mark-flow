@@ -11,16 +11,13 @@ import {
   Github,
   FileText,
   Loader2,
-  // Settings,
   CheckCircle,
-  Info,
   Code,
-  BookOpen,
   Brain,
   Zap,
   Shield,
   ArrowRight,
-  Lock
+  Lock,
 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -138,7 +135,7 @@ export default function Home() {
       })
 
       const data = await response.json().catch(() => ({
-        error: "Failed to parse server response"
+        error: "Failed to parse server response",
       }))
 
       if (!response.ok) {
@@ -163,35 +160,33 @@ export default function Home() {
 
   return (
     <main className="min-h-screen relative overflow-hidden bg-[#080320]">
-      <AnimatePresence>
-        {isLoading && <ReadmeLoadingOverlay />}
-      </AnimatePresence>
+      <AnimatePresence>{isLoading && <ReadmeLoadingOverlay />}</AnimatePresence>
 
       {/* Enhanced mesh gradient background with subtle animation */}
       <div className="absolute inset-0 w-full h-full">
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.2, 1],
-            opacity: [0.2, 0.3, 0.2] 
+            opacity: [0.2, 0.3, 0.2],
           }}
-          transition={{ 
+          transition={{
             duration: 8,
-            repeat: Infinity,
-            ease: "easeInOut" 
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
           }}
-          className="absolute top-0 left-[-20%] w-[500px] h-[500px] rounded-full bg-purple-800/30 blur-[120px]" 
+          className="absolute top-0 left-[-20%] w-[500px] h-[500px] rounded-full bg-purple-800/30 blur-[120px]"
         />
-        <motion.div 
-          animate={{ 
+        <motion.div
+          animate={{
             scale: [1, 1.1, 1],
-            opacity: [0.2, 0.25, 0.2] 
+            opacity: [0.2, 0.25, 0.2],
           }}
-          transition={{ 
+          transition={{
             duration: 10,
-            repeat: Infinity,
-            ease: "easeInOut" 
+            repeat: Number.POSITIVE_INFINITY,
+            ease: "easeInOut",
           }}
-          className="absolute top-[20%] right-[-20%] w-[600px] h-[600px] rounded-full bg-indigo-700/30 blur-[150px]" 
+          className="absolute top-[20%] right-[-20%] w-[600px] h-[600px] rounded-full bg-indigo-700/30 blur-[150px]"
         />
         <div className="absolute bottom-[-20%] left-[20%] w-[700px] h-[700px] rounded-full bg-violet-900/40 blur-[140px]" />
       </div>
@@ -199,12 +194,12 @@ export default function Home() {
       {/* Header with hover effects */}
       <header className="container mx-auto py-4 px-4 relative z-10">
         <div className="flex justify-between items-center">
-          <motion.div 
+          <motion.div
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
             className="flex items-center gap-3 cursor-pointer"
           >
-            <Image 
+            <Image
               src="/Markfloww.png"
               alt="Mark Flow Logo"
               width={50}
@@ -214,13 +209,12 @@ export default function Home() {
             <span className="text-white font-semibold text-[1.5rem]">Mark Flow</span>
           </motion.div>
           <div className="flex items-center gap-4">
-
             {user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
-                  <img 
-                    src={user.photoURL} 
-                    alt={user.displayName} 
+                  <img
+                    src={user.photoURL || "/placeholder.svg"}
+                    alt={user.displayName}
                     className="w-8 h-8 rounded-full"
                   />
                   <span className="text-white">{user.displayName}</span>
@@ -246,7 +240,7 @@ export default function Home() {
 
       <div className="container mx-auto py-12 px-4 relative z-10">
         {user ? (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -260,9 +254,10 @@ export default function Home() {
               <span className="font-bold"> Project</span>
             </h1>
             <p className="text-lg text-indigo-200/90 max-w-2xl mx-auto leading-relaxed mb-12 font-light">
-              Accept repository details and let Mark FLow analyze your codebase to generate professional documentation in seconds.
+              Accept repository details and let Mark FLow analyze your codebase to generate professional documentation
+              in seconds.
             </p>
-            
+
             <div className="grid gap-10">
               <Card className="bg-indigo-950/40 backdrop-blur-xl border border-indigo-500/20 rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(79_70_229/0.3)]">
                 <CardHeader className="pb-4 border-b border-indigo-500/20">
@@ -378,9 +373,7 @@ export default function Home() {
                               onCheckedChange={setIsProVersion}
                               className="data-[state=checked]:bg-purple-500"
                             />
-                            <Label className="text-indigo-200 text-sm cursor-pointer">
-                              Pro Version
-                            </Label>
+                            <Label className="text-indigo-200 text-sm cursor-pointer">Pro Version</Label>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent className="bg-indigo-900 text-white border-indigo-700">
@@ -395,14 +388,14 @@ export default function Home() {
                     <div className="space-y-2">
                       <div className="flex gap-3">
                         <div className="relative flex-1">
-                          <motion.div 
-                            animate={{ 
-                              width: ["0%", "100%", "0%"]
+                          <motion.div
+                            animate={{
+                              width: ["0%", "100%", "0%"],
                             }}
-                            transition={{ 
+                            transition={{
                               duration: 2,
-                              repeat: Infinity,
-                              ease: "easeInOut"
+                              repeat: Number.POSITIVE_INFINITY,
+                              ease: "easeInOut",
                             }}
                             className="absolute -top-[1px] left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-purple-500 to-transparent"
                           />
@@ -437,10 +430,10 @@ export default function Home() {
                             <motion.div
                               className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent"
                               animate={{ x: ["-100%", "100%"] }}
-                              transition={{ 
+                              transition={{
                                 duration: 1,
-                                repeat: Infinity,
-                                ease: "linear"
+                                repeat: Number.POSITIVE_INFINITY,
+                                ease: "linear",
                               }}
                             />
                           )}
@@ -457,34 +450,48 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
-                      {isProVersion ? (
-                        <div className="mt-4">
-                          <Label htmlFor="custom-requirements" className="text-indigo-200 mb-2 block">
-                            Custom Requirements
-                          </Label>
-                          <Textarea
-                            id="custom-requirements"
-                            placeholder="Add any specific requirements for your README (e.g., specific sections, formatting preferences, or content focus)"
-                            className="bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60 min-h-[100px]"
-                            value={customRequirements}
-                            onChange={(e) => setCustomRequirements(e.target.value)}
-                          />
-                        </div>
-                      ) : (
-                        <div className="mt-4 p-4 rounded-xl border border-indigo-500/20 bg-indigo-900/20">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Lock className="h-4 w-4 text-indigo-400" />
-                            <span className="text-indigo-200 font-medium">Pro Feature</span>
-                          </div>
-                          <p className="text-sm text-indigo-300">
-                            Upgrade to Pro to customize your README with specific requirements and formatting preferences.
-                          </p>
-                        </div>
-                      )}
+                      <div className="mt-4 min-h-[160px]">
+                        {isProVersion ? (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                          >
+                            <Label htmlFor="custom-requirements" className="text-indigo-200 mb-2 block">
+                              Custom Requirements
+                            </Label>
+                            <Textarea
+                              id="custom-requirements"
+                              placeholder="Add any specific requirements for your README (e.g., specific sections, formatting preferences, or content focus)"
+                              className="bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60 min-h-[100px]"
+                              value={customRequirements}
+                              onChange={(e) => setCustomRequirements(e.target.value)}
+                            />
+                          </motion.div>
+                        ) : (
+                          <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3 }}
+                            className="p-4 rounded-xl border border-indigo-500/20 bg-indigo-900/20"
+                          >
+                            <div className="flex items-center gap-2 mb-2">
+                              <Lock className="h-4 w-4 text-indigo-400" />
+                              <span className="text-indigo-200 font-medium">Pro Feature</span>
+                            </div>
+                            <p className="text-sm text-indigo-300">
+                              Upgrade to Pro to customize your README with specific requirements and formatting
+                              preferences.
+                            </p>
+                          </motion.div>
+                        )}
+                      </div>
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
-                      <motion.div 
+                      <motion.div
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
@@ -499,7 +506,7 @@ export default function Home() {
                         </div>
                       </motion.div>
 
-                      <motion.div 
+                      <motion.div
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
@@ -514,7 +521,7 @@ export default function Home() {
                         </div>
                       </motion.div>
 
-                      <motion.div 
+                      <motion.div
                         whileHover={{ scale: 1.02 }}
                         transition={{ type: "spring", stiffness: 400, damping: 10 }}
                         className="bg-indigo-900/30 border border-indigo-500/20 rounded-xl p-4 flex items-start hover:border-purple-500/40 transition-colors cursor-pointer"
@@ -599,7 +606,7 @@ export default function Home() {
                         <TabsContent value="preview" className="mt-4">
                           <div className="border border-indigo-600/20 rounded-xl p-6 bg-indigo-900/20 shadow-inner text-left overflow-auto">
                             <div className="prose prose-invert max-w-none prose-pre:bg-indigo-950/50 prose-pre:border prose-pre:border-indigo-500/20 prose-headings:text-white prose-p:text-indigo-200 prose-a:text-purple-400 prose-strong:text-white prose-code:text-purple-300 prose-ul:text-indigo-200 prose-pre:overflow-auto">
-                              <ReactMarkdown 
+                              <ReactMarkdown
                                 components={{
                                   pre: ({ node, ...props }) => (
                                     <div className="overflow-auto">
@@ -608,7 +615,7 @@ export default function Home() {
                                   ),
                                   code: ({ node, ...props }) => (
                                     <code className="break-words whitespace-pre-wrap" {...props} />
-                                  )
+                                  ),
                                 }}
                               >
                                 {readme}
@@ -641,8 +648,7 @@ export default function Home() {
               Generate Professional <span className="font-bold">README</span> Files with AI
             </h1>
             <p className="text-xl text-indigo-200/90 max-w-2xl mx-auto leading-relaxed mb-12">
-              Transform your repository documentation with our AI-powered README generator. 
-              Sign in to get started.
+              Transform your repository documentation with our AI-powered README generator. Sign in to get started.
             </p>
             <Button
               onClick={signInWithGoogle}
@@ -653,22 +659,21 @@ export default function Home() {
             </Button>
           </motion.div>
         )}
-        
+
         {/* Stats Section */}
         {!readme && !user && (
           <div className="max-w-4xl mx-auto mt-20 text-center">
-            <h2 className="text-3xl font-light mb-8 text-white">Trusted by <span className="font-medium">leading developers</span></h2>
-            
-            <motion.div 
+            <h2 className="text-3xl font-light mb-8 text-white">
+              Trusted by <span className="font-medium">leading developers</span>
+            </h2>
+
+            <motion.div
               className="grid grid-cols-4 gap-4"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
             >
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
+              <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
                 <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
                   <div className="flex justify-center mb-2">
                     <Shield className="h-6 w-6 text-purple-400" />
@@ -677,11 +682,8 @@ export default function Home() {
                   <div className="text-indigo-300 text-sm">Successful Analysis</div>
                 </Card>
               </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
+
+              <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
                 <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
                   <div className="flex justify-center mb-2">
                     <FileText className="h-6 w-6 text-purple-400" />
@@ -690,11 +692,8 @@ export default function Home() {
                   <div className="text-indigo-300 text-sm">READMEs Generated</div>
                 </Card>
               </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
+
+              <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
                 <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
                   <div className="flex justify-center mb-2">
                     <Code className="h-6 w-6 text-purple-400" />
@@ -703,11 +702,8 @@ export default function Home() {
                   <div className="text-indigo-300 text-sm">Code Files Analyzed</div>
                 </Card>
               </motion.div>
-              
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                transition={{ type: "spring", stiffness: 400, damping: 10 }}
-              >
+
+              <motion.div whileHover={{ scale: 1.05 }} transition={{ type: "spring", stiffness: 400, damping: 10 }}>
                 <Card className="bg-indigo-900/30 border border-indigo-500/20 p-6 rounded-xl">
                   <div className="flex justify-center mb-2">
                     <Github className="h-6 w-6 text-purple-400" />
@@ -719,17 +715,19 @@ export default function Home() {
             </motion.div>
           </div>
         )}
-        
+
         {/* FAQ Section */}
         {!readme && !user && (
-          <motion.div 
+          <motion.div
             className="max-w-3xl mx-auto mt-20 mb-12"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.4 }}
           >
-            <h2 className="text-3xl font-light mb-8 text-white text-center">Frequently Asked <span className="font-medium">Questions</span></h2>
-            
+            <h2 className="text-3xl font-light mb-8 text-white text-center">
+              Frequently Asked <span className="font-medium">Questions</span>
+            </h2>
+
             <div className="space-y-4">
               <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
                 <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
@@ -737,53 +735,50 @@ export default function Home() {
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
-                  Mark FLow analyzes your repository's code structure, functions, dependencies, and architecture to generate a comprehensive README using advanced AI models.
+                  Mark FLow analyzes your repository's code structure, functions, dependencies, and architecture to
+                  generate a comprehensive README using advanced AI models.
                 </CardDescription>
               </Card>
-              
+
               <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
                 <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
                   <span>Is my code secure when using Mark FLow?</span>
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
-                  Yes, all repository analysis happens securely. We never store your code and all processing is done with strict privacy protocols in place.
+                  Yes, all repository analysis happens securely. We never store your code and all processing is done
+                  with strict privacy protocols in place.
                 </CardDescription>
               </Card>
-              
+
               <Card className="bg-indigo-900/30 border border-indigo-500/20 p-5 rounded-xl overflow-hidden">
                 <CardTitle className="text-lg text-white mb-2 flex justify-between items-center cursor-pointer">
                   <span>Why do I need a GitHub API key?</span>
                   <ArrowRight className="h-5 w-5 text-purple-400" />
                 </CardTitle>
                 <CardDescription className="text-indigo-200">
-                  A GitHub API key allows Mark FLow to access private repositories and avoids rate limits when analyzing larger projects. It's optional but recommended.
+                  A GitHub API key allows Mark FLow to access private repositories and avoids rate limits when analyzing
+                  larger projects. It's optional but recommended.
                 </CardDescription>
               </Card>
             </div>
           </motion.div>
         )}
       </div>
-      
+
       {/* Footer */}
       <footer className="relative z-10 border-t border-indigo-500/20 mt-10">
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <Image 
-                src="/Markfloww.png"
-                alt="Mark Flow Logo"
-                width={32}
-                height={32}
-              />
+              <Image src="/Markfloww.png" alt="Mark Flow Logo" width={32} height={32} />
               <span className="text-white font-semibold">Mark Flow</span>
             </div>
-            <div className="text-indigo-400 text-sm">
-              © 2025 Mark FLow. All rights reserved.
-            </div>
+            <div className="text-indigo-400 text-sm">© 2025 Mark FLow. All rights reserved.</div>
           </div>
         </div>
       </footer>
     </main>
   )
 }
+
