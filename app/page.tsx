@@ -11,7 +11,7 @@ import {
   Github,
   FileText,
   Loader2,
-  Settings,
+  // Settings,
   CheckCircle,
   Info,
   Code,
@@ -19,7 +19,8 @@ import {
   Brain,
   Zap,
   Shield,
-  ArrowRight
+  ArrowRight,
+  Lock
 } from "lucide-react"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -40,6 +41,7 @@ import { auth } from "@/lib/firebase"
 import { GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth"
 import { motion, AnimatePresence } from "framer-motion"
 import { ReadmeLoadingOverlay } from "@/components/ReadmeLoadingOverlay"
+import Image from "next/image"
 
 export default function Home() {
   const [repoUrl, setRepoUrl] = useState("")
@@ -54,6 +56,7 @@ export default function Home() {
   const [copySuccess, setCopySuccess] = useState(false)
   const [user, setUser] = useState<any>(null)
   const [customRequirements, setCustomRequirements] = useState("")
+  const [isProVersion, setIsProVersion] = useState(false)
 
   // Load API key from localStorage on component mount
   useEffect(() => {
@@ -130,7 +133,7 @@ export default function Home() {
         body: JSON.stringify({
           repoUrl,
           apiKey: useApiKey ? githubApiKey : null,
-          customRequirements,
+          customRequirements: isProVersion ? customRequirements : null,
         }),
       })
 
@@ -199,23 +202,19 @@ export default function Home() {
           <motion.div 
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
-            className="flex items-center gap-2 cursor-pointer"
+            className="flex items-center gap-3 cursor-pointer"
           >
-            <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-              <Code className="h-4 w-4 text-white" />
-            </div>
-            <span className="text-white font-semibold text-xl">Mark FLow</span>
+            <Image 
+              src="/Markfloww.png"
+              alt="Mark Flow Logo"
+              width={50}
+              height={50}
+              // className="rounded-full"
+            />
+            <span className="text-white font-semibold text-[1.5rem]">Mark Flow</span>
           </motion.div>
           <div className="flex items-center gap-4">
-            {/* <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
-              Documentation
-            </Button>
-            <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
-              Blog
-            </Button>
-            <Button variant="ghost" className="text-indigo-200 hover:text-white hover:bg-indigo-900/40">
-              About
-            </Button> */}
+
             {user ? (
               <div className="flex items-center gap-3">
                 <div className="flex items-center gap-2">
@@ -282,13 +281,13 @@ export default function Home() {
                         <TooltipTrigger asChild>
                           <Dialog open={settingsOpen} onOpenChange={setSettingsOpen}>
                             <DialogTrigger asChild>
-                              <Button
+                              {/* <Button
                                 variant="ghost"
                                 size="icon"
                                 className="text-indigo-300 hover:text-white hover:bg-indigo-900/50"
                               >
                                 <Settings className="h-5 w-5" />
-                              </Button>
+                              </Button> */}
                             </DialogTrigger>
                             <DialogContent className="bg-indigo-950 border border-indigo-600/30 text-white">
                               <DialogHeader>
@@ -370,6 +369,25 @@ export default function Home() {
                         </TooltipContent>
                       </Tooltip>
                     </TooltipProvider>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="flex items-center gap-2">
+                            <Switch
+                              checked={isProVersion}
+                              onCheckedChange={setIsProVersion}
+                              className="data-[state=checked]:bg-purple-500"
+                            />
+                            <Label className="text-indigo-200 text-sm cursor-pointer">
+                              Pro Version
+                            </Label>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="bg-indigo-900 text-white border-indigo-700">
+                          <p>Enable pro features like custom instructions</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-8">
@@ -439,18 +457,30 @@ export default function Home() {
                           )}
                         </Button>
                       </div>
-                      <div className="mt-4">
-                        <Label htmlFor="custom-requirements" className="text-indigo-200 mb-2 block">
-                          Custom Requirements (Optional)
-                        </Label>
-                        <Textarea
-                          id="custom-requirements"
-                          placeholder="Add any specific requirements for your README (e.g., specific sections, formatting preferences, or content focus)"
-                          className="bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60 min-h-[100px]"
-                          value={customRequirements}
-                          onChange={(e) => setCustomRequirements(e.target.value)}
-                        />
-                      </div>
+                      {isProVersion ? (
+                        <div className="mt-4">
+                          <Label htmlFor="custom-requirements" className="text-indigo-200 mb-2 block">
+                            Custom Requirements
+                          </Label>
+                          <Textarea
+                            id="custom-requirements"
+                            placeholder="Add any specific requirements for your README (e.g., specific sections, formatting preferences, or content focus)"
+                            className="bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60 min-h-[100px]"
+                            value={customRequirements}
+                            onChange={(e) => setCustomRequirements(e.target.value)}
+                          />
+                        </div>
+                      ) : (
+                        <div className="mt-4 p-4 rounded-xl border border-indigo-500/20 bg-indigo-900/20">
+                          <div className="flex items-center gap-2 mb-2">
+                            <Lock className="h-4 w-4 text-indigo-400" />
+                            <span className="text-indigo-200 font-medium">Pro Feature</span>
+                          </div>
+                          <p className="text-sm text-indigo-300">
+                            Upgrade to Pro to customize your README with specific requirements and formatting preferences.
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     <div className="grid grid-cols-3 gap-4">
@@ -740,10 +770,13 @@ export default function Home() {
         <div className="container mx-auto py-6 px-4">
           <div className="flex justify-between items-center">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full flex items-center justify-center">
-                <Code className="h-4 w-4 text-white" />
-              </div>
-              <span className="text-white font-semibold">Mark FLow</span>
+              <Image 
+                src="/Markfloww.png"
+                alt="Mark Flow Logo"
+                width={32}
+                height={32}
+              />
+              <span className="text-white font-semibold">Mark Flow</span>
             </div>
             <div className="text-indigo-400 text-sm">
               © 2025 Mark FLow. All rights reserved.
