@@ -53,6 +53,7 @@ export default function Home() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [copySuccess, setCopySuccess] = useState(false)
   const [user, setUser] = useState<any>(null)
+  const [customRequirements, setCustomRequirements] = useState("")
 
   // Load API key from localStorage on component mount
   useEffect(() => {
@@ -129,6 +130,7 @@ export default function Home() {
         body: JSON.stringify({
           repoUrl,
           apiKey: useApiKey ? githubApiKey : null,
+          customRequirements,
         }),
       })
 
@@ -345,7 +347,7 @@ export default function Home() {
                               </div>
                               <DialogFooter className="flex justify-between sm:justify-between">
                                 <Button
-                                  variant="destructive"
+                                  variant="secondary"
                                   onClick={clearApiKey}
                                   disabled={!apiKeySaved}
                                   className="bg-red-900/40 hover:bg-red-800/60 text-white border border-red-500/30"
@@ -436,6 +438,18 @@ export default function Home() {
                             </>
                           )}
                         </Button>
+                      </div>
+                      <div className="mt-4">
+                        <Label htmlFor="custom-requirements" className="text-indigo-200 mb-2 block">
+                          Custom Requirements (Optional)
+                        </Label>
+                        <Textarea
+                          id="custom-requirements"
+                          placeholder="Add any specific requirements for your README (e.g., specific sections, formatting preferences, or content focus)"
+                          className="bg-indigo-900/30 backdrop-blur-sm border-indigo-500/30 focus:border-purple-500 focus:ring-purple-500/30 rounded-xl text-white placeholder:text-indigo-400/60 min-h-[100px]"
+                          value={customRequirements}
+                          onChange={(e) => setCustomRequirements(e.target.value)}
+                        />
                       </div>
                     </div>
 
@@ -553,9 +567,22 @@ export default function Home() {
                           </TabsTrigger>
                         </TabsList>
                         <TabsContent value="preview" className="mt-4">
-                          <div className="border border-indigo-600/20 rounded-xl p-6 bg-indigo-900/20 shadow-inner">
-                            <div className="prose dark:prose-invert max-w-none prose-headings:text-white prose-a:text-purple-400 prose-code:bg-indigo-900/60 prose-code:text-indigo-200 prose-pre:bg-indigo-900/60 prose-pre:text-indigo-200 prose-strong:text-indigo-100">
-                              <ReactMarkdown>{readme}</ReactMarkdown>
+                          <div className="border border-indigo-600/20 rounded-xl p-6 bg-indigo-900/20 shadow-inner text-left overflow-auto">
+                            <div className="prose prose-invert max-w-none prose-pre:bg-indigo-950/50 prose-pre:border prose-pre:border-indigo-500/20 prose-headings:text-white prose-p:text-indigo-200 prose-a:text-purple-400 prose-strong:text-white prose-code:text-purple-300 prose-ul:text-indigo-200 prose-pre:overflow-auto">
+                              <ReactMarkdown 
+                                components={{
+                                  pre: ({ node, ...props }) => (
+                                    <div className="overflow-auto">
+                                      <pre {...props} />
+                                    </div>
+                                  ),
+                                  code: ({ node, ...props }) => (
+                                    <code className="break-words whitespace-pre-wrap" {...props} />
+                                  )
+                                }}
+                              >
+                                {readme}
+                              </ReactMarkdown>
                             </div>
                           </div>
                         </TabsContent>

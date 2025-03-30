@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const { repoUrl, apiKey } = await request.json()
+    const { repoUrl, apiKey, customRequirements } = await request.json()
 
     if (!repoUrl) {
       return NextResponse.json({ error: "Repository URL is required" }, { status: 400 })
@@ -47,7 +47,7 @@ export async function POST(request: NextRequest) {
         timeoutPromise
       ])
 
-      const readme = await generateReadmeWithGemini(repoData)
+      const readme = await generateReadmeWithGemini(repoData, customRequirements)
 
       return NextResponse.json({ readme })
     } catch (error: any) {

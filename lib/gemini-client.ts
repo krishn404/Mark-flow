@@ -12,12 +12,26 @@ export function getGeminiClient() {
 }
 
 // Generate content using Gemini AI
-export async function generateWithGemini(prompt: string, model = "gemini-1.5-pro") {
+export async function generateWithGemini(
+  prompt: string,
+  systemPrompt?: string,
+  model = "gemini-1.5-pro"
+) {
   try {
     const genAI = getGeminiClient()
     const geminiModel = genAI.getGenerativeModel({ model })
 
-    const result = await geminiModel.generateContent(prompt)
+    // Create the chat and include system prompt if provided
+    const chat = geminiModel.startChat({
+      history: systemPrompt ? [
+        {
+          role: "user",
+          parts: [{ text: systemPrompt }],
+        }
+      ] : []
+    })
+
+    const result = await chat.sendMessage(prompt)
     const response = result.response
     return response.text()
   } catch (error) {
@@ -38,7 +52,7 @@ export async function generateWithGemini(prompt: string, model = "gemini-1.5-pro
 }
 
 // Generate README content using Gemini AI
-export async function generateReadmeWithGemini(repoData: any) {
+export async function generateReadmeWithGemini(repoData: any, userPrompt?: string) {
   const {
     repoInfo,
     contents,
@@ -52,11 +66,26 @@ export async function generateReadmeWithGemini(repoData: any) {
     fileContents,
   } = repoData
 
+  // Modify the system prompt to emphasize following custom requirements
+  const systemPrompt = `You are a professional technical writer and developer who specializes in creating clear, comprehensive README documentation for software projects. Your expertise includes:
+- Writing clear, concise technical documentation
+- Explaining complex technical concepts in an accessible way
+- Structuring documentation for maximum readability
+- Following markdown best practices
+- Highlighting key technical features and architecture decisions
+- Creating user-friendly installation and usage guides
+- Adapting documentation to meet specific user requirements
+
+Your task is to generate a README.md file that will help developers understand and use this project effectively. If provided with custom requirements, prioritize following those requirements while maintaining professional documentation standards.`
+
   // Create a detailed prompt for Gemini
-  const prompt = `
+  const basePrompt = `
 Generate a comprehensive, professional README.md file for a GitHub repository. Use standard well-aligned markdown formatting throughout the document. Do not use HTML center tags or other centering methods.
 
-REPOSITORY INFORMATION:
+${userPrompt ? `CUSTOM REQUIREMENTS (PRIORITY):
+${userPrompt}
+
+` : ''}REPOSITORY INFORMATION:
 - Name: ${repoInfo.name}
 - Description: ${repoInfo.description || "No description provided"}
 - Owner: ${owner}
@@ -126,8 +155,13 @@ INSTRUCTIONS:
 The README should be comprehensive but concise, focusing on helping developers understand the project quickly.
 `
 
+  // Combine base prompt with user prompt if provided
+  const finalPrompt = userPrompt 
+    ? `${basePrompt}\n\nADDITIONAL REQUIREMENTS:\n${userPrompt}`
+    : basePrompt
+
   try {
-    const readmeContent = await generateWithGemini(prompt)
+    const readmeContent = await generateWithGemini(finalPrompt, systemPrompt)
     return readmeContent
   } catch (error) {
     console.error("Error generating README with Gemini:", error)
